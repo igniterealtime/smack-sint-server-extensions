@@ -24,12 +24,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.bouncycastle.util.test.TestFailedException;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NoResponseException;
@@ -44,12 +47,15 @@ import org.jivesoftware.smackx.geoloc.packet.GeoLocation;
 import org.jivesoftware.smackx.pubsub.form.ConfigureForm;
 import org.jivesoftware.smackx.pubsub.form.FillableConfigureForm;
 import org.jivesoftware.smackx.pubsub.form.FillableSubscribeForm;
+import org.jivesoftware.smackx.pubsub.form.FilledConfigureForm;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 
 import org.igniterealtime.smack.inttest.AbstractSmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTestEnvironment;
 import org.igniterealtime.smack.inttest.TestNotPossibleException;
 import org.igniterealtime.smack.inttest.annotations.SmackIntegrationTest;
+import org.jivesoftware.smackx.xdata.form.FilledForm;
+import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
@@ -977,6 +983,67 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
             assertTrue(item.toXML().toString().contains(needleB));
         } finally {
             pubSubManagerOne.deleteNode(nodename);
+        }
+    }
+
+    @SmackIntegrationTest
+    public void leafSubscribeNotOnWhitelistTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException, PubSubException.NotAPubSubNodeException, TestNotPossibleException {
+        final String nodename = "sinttest-subscribe-nodename-" + testRunId;
+        final String collectionNodeName = nodename + "-collection";
+        final String leafNodeName = nodename + "-leaf";
+        final String needle = "test content A" + Math.random();
+
+        final ConfigureForm defaultConfiguration = pubSubManagerOne.getDefaultConfiguration();
+
+        final FillableConfigureForm leafConfig = defaultConfiguration.getFillableForm();
+        leafConfig.setAccessModel(AccessModel.whitelist);
+        LeafNode leafNode;
+        try {
+            leafNode = (LeafNode) pubSubManagerOne.createNode(leafNodeName, leafConfig);
+        } catch (XMPPErrorException e) {
+            throw new TestNotPossibleException("Access model 'whitelist' not supported on the server.");
+        }
+
+        // Attempt 1
+        final FillableConfigureForm collectionConfig = defaultConfiguration.getFillableForm();
+
+        // Attempt 2
+        /*
+        final DataForm.Builder builder = DataForm.builder();
+        builder.setFormType(DataForm.Type.submit.toString());
+        final DataForm form = builder.build();
+        final FillableConfigureForm collectionConfig = new ConfigureForm(form).getFillableForm();
+         */
+
+        // Attempt 3
+        /*
+        final FillableConfigureForm collectionConfig = new ConfigureForm(DataForm.builder().setFormType(DataForm.Type.submit.toString()).build()).getFillableForm();
+        */
+
+        collectionConfig.setNodeType(NodeType.collection);
+        collectionConfig.setChildrenAssociationPolicy(ChildrenAssociationPolicy.all);
+        collectionConfig.setChildren(Collections.singletonList(leafNode.getId()));
+        try {
+            pubSubManagerOne.createNode(collectionNodeName, collectionConfig);
+        } catch (XMPPErrorException e) {
+            throw new TestNotPossibleException("Collection nodes not supported on the server.");
+        }
+
+        try {
+            final Node subscriberNode = pubSubManagerTwo.getNode(collectionNodeName);
+            final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
+            final CompletableFuture<Stanza> result = new CompletableFuture<>();
+
+            subscriberNode.subscribe(subscriber);
+            conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML().toString().contains(needle));
+
+            leafNode.publish(new PayloadItem<>(GeoLocation.builder().setDescription(needle).build()));
+            assertThrows(TimeoutException.class, () -> result.get(conOne.getReplyTimeout(), TimeUnit.MILLISECONDS));
+        } catch (XMPPErrorException xee) {
+            throw new AssertionError("Subscription to leaf node failed.", xee);
+        } finally {
+            //pubSubManagerOne.deleteNode(leafNodeName);
+            //pubSubManagerOne.deleteNode(collectionNodeName);
         }
     }
 }
