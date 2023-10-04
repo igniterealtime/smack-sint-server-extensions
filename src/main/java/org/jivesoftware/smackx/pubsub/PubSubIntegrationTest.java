@@ -54,6 +54,7 @@ import org.igniterealtime.smack.inttest.AbstractSmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTestEnvironment;
 import org.igniterealtime.smack.inttest.TestNotPossibleException;
 import org.igniterealtime.smack.inttest.annotations.SmackIntegrationTest;
+import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.form.FilledForm;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jxmpp.jid.DomainBareJid;
@@ -1005,7 +1006,23 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         }
 
         // Attempt 1
-        final FillableConfigureForm collectionConfig = defaultConfiguration.getFillableForm();
+        final DataForm.Builder builder = DataForm.builder(DataForm.Type.form);
+
+        // Populate fields of new dataform with the default fields.
+        final DataForm defaultDataForm = defaultConfiguration.getFillableForm().getDataForm();
+        builder.addFields( defaultDataForm.getFields() );
+        if (!defaultDataForm.hasField("pubsub#node_type")) {
+            builder.addField(FormField.textSingleBuilder("pubsub#node_type").build());
+        }
+        if (!defaultDataForm.hasField("pubsub#children_association_policy")) {
+            builder.addField(FormField.listSingleBuilder("pubsub#children_association_policy")
+                .addOption("all").addOption("owners").addOption("whitelist").build());
+        }
+        if (!defaultDataForm.hasField("pubsub#children")) {
+            builder.addField(FormField.textMultiBuilder("pubsub#children").build());
+        }
+
+        final FillableConfigureForm collectionConfig = new ConfigureForm(builder.build()).getFillableForm();
 
         // Attempt 2
         /*
