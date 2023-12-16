@@ -1,5 +1,5 @@
 # smack-sint-server-extensions
-Additional tests that are server-oriented to add to those in [Smack's Integration Test Framework](https://github.com/igniterealtime/Smack/blob/master/documentation/developer/integrationtest.md).
+Additional tests that are server-oriented to add to those in [Smack's Integration Test Framework](https://download.igniterealtime.org/smack/dailybuilds/sinttest-javadoc/org/igniterealtime/smack/inttest/package-summary.html).
 
 # Run tests
 To run tests, edit the pom.xml to match your settings, then run `mvn exec:java`
