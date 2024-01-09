@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smack.version>4.4.7</smack.version>
+        <smack.version>4.5.0-alpha2</smack.version>
     </properties>
 
     <licenses>
@@ -99,6 +99,11 @@
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-xmlparser-stax</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-websocket</artifactId>
             <version>${smack.version}</version>
         </dependency>
         <dependency>
