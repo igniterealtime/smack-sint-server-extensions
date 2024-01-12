@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smack.version>4.5.0-alpha2</smack.version>
+        <smack.version>4.5.0-alpha3-SNAPSHOT</smack.version>
     </properties>
 
     <licenses>
@@ -131,5 +131,12 @@
             <version>${smack.version}</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
 </project>
