@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smack.version>4.4.6</smack.version>
+        <smack.version>4.5.0-alpha3-SNAPSHOT</smack.version>
     </properties>
 
     <licenses>
@@ -64,6 +64,10 @@
                             <key>sinttest.securityMode</key>
                             <value>disabled</value>
                         </systemProperty>
+                        <systemProperty>
+                            <key>sinttest.enabledTests</key>
+                            <value>AdHocCommandIntegrationTest</value>
+                        </systemProperty>
                     </systemProperties>
                 </configuration>
             </plugin>
@@ -102,6 +106,11 @@
             <version>${smack.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-websocket</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>5.4.2</version>
@@ -122,5 +131,12 @@
             <version>${smack.version}</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
 </project>
