@@ -13,11 +13,11 @@ The tests from this project can be executed using any of the following methods.
 This project releases artifacts that are self-contained, executable JAR files. The file name format of these files is:
 `smack-sint-server-extensions-<version>-jar-with-dependencies.jar`
 
-When executing the JAR file, the tests are ran.
+When executing the JAR file, the tests are run.
 
 To configure the tests, the [framework properties](https://download.igniterealtime.org/smack/dailybuilds/sinttest-javadoc/org/igniterealtime/smack/inttest/package-summary.html) can be provided as standard Java system properties.
 
-For example, to run PubSub-specific tests against a service named `example.org`, using an admin account to create test users, without a disabled security mode, this command can be invoked:
+For example, to run PubSub-specific tests against a service named `example.org`, using an admin account to create test users, with security disabled, this command can be invoked:
 
 ```bash
 java -Dsinttest.adminAccountUsername=admin \
