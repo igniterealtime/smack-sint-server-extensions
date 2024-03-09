@@ -1,0 +1,41 @@
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 8, 11, 17 ]
+        distribution: [ temurin ] # We could add more here: temurin, adopt, liberica, microsoft, corretto
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{ matrix.java }} ${{ matrix.distribution }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          cache: maven
+      - name: Build with Maven # We install instead of package, because we want the result in the local mvn repo
+        run: mvn package
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        java: [ 8 ]
+        distribution: [ temurin ] # We could add more here: temurin, adopt, liberica, microsoft, corretto
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{ matrix.java }} ${{ matrix.distribution }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
+          cache: maven
+      # TODO: Replace with running Openfire and running SINT tests
+      - name: Test with Maven
+        run: mvn test
