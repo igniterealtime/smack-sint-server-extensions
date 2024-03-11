@@ -2,6 +2,10 @@ name: Build & Test
 
 on: [pull_request]
 
+env:
+  OPENFIRE_VERSION: 4_8_1 # The version of Openfire to use, using underscores, to match artifact filenames in https://github.com/igniterealtime/Openfire/releases/
+
+
 jobs:
   build:
     name: Build
@@ -22,6 +26,7 @@ jobs:
         run: mvn package
       - name: Stash the built artifacts
         uses: actions/upload-artifact@v2
+        if: ${{ matrix.java == 8}}
         with:
           name: smack-tests
           path: target/smack-sint-server-extensions-*-jar-with-dependencies.jar
@@ -37,9 +42,18 @@ jobs:
           repository: igniterealtime/Openfire
           sparse-checkout: |
             .github
-      - name: Download and untar Openfire
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: openfire.tar.gz
+          key: openfire-${{env.OPENFIRE_VERSION}}
+      - name: Download Openfire
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          curl -L https://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4_8_1.tar.gz -o openfire.tar.gz
+          DOTTED_VERSION=$(echo ${{env.OPENFIRE_VERSION}} | tr _ .)
+          curl -L https://github.com/igniterealtime/Openfire/releases/download/v$DOTTED_VERSION/openfire_${{env.OPENFIRE_VERSION}}.tar.gz -o openfire.tar.gz
+      - name: Extract Openfire
+        run: |
           tar -xzf openfire.tar.gz
       - name: Start CI server from distribution
         id: startCIServer
